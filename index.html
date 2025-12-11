@@ -897,10 +897,43 @@
             try {
                 const s = localStorage.getItem('cdcbot_settings');
                 if (s) { settings = { ...settings, ...JSON.parse(s) }; state.walletTHB = settings.simBalance; }
-            } catch (e) { }
+                // Load saved candles
+                const savedCandles = localStorage.getItem('cdcbot_candles');
+                if (savedCandles) {
+                    const parsed = JSON.parse(savedCandles);
+                    if (parsed.timeframe === settings.timeframe && parsed.candles.length > 0) {
+                        state.candles = parsed.candles;
+                    }
+                }
+                // Load saved trades
+                const savedTrades = localStorage.getItem('cdcbot_trades');
+                if (savedTrades) {
+                    const parsed = JSON.parse(savedTrades);
+                    state.trades = parsed.trades || [];
+                    state.walletTHB = parsed.walletTHB ?? settings.simBalance;
+                    state.walletBTC = parsed.walletBTC || 0;
+                    state.entryPrice = parsed.entryPrice || null;
+                    state.costBasis = parsed.costBasis || null;
+                    state.totalFees = parsed.totalFees || 0;
+                }
+            } catch (e) { console.log('Load error:', e); }
         }
 
         function saveSettingsToStorage() { localStorage.setItem('cdcbot_settings', JSON.stringify(settings)); }
+
+        function saveCandlesToStorage() {
+            try {
+                localStorage.setItem('cdcbot_candles', JSON.stringify({ timeframe: settings.timeframe, candles: state.candles.slice(-50) }));
+                localStorage.setItem('cdcbot_trades', JSON.stringify({
+                    trades: state.trades,
+                    walletTHB: state.walletTHB,
+                    walletBTC: state.walletBTC,
+                    entryPrice: state.entryPrice,
+                    costBasis: state.costBasis,
+                    totalFees: state.totalFees
+                }));
+            } catch (e) { }
+        }
 
         // ========== WEBSOCKET ==========
         function connectWS() {
@@ -934,10 +967,20 @@
             if (now - lastCandleClose >= settings.timeframe) { closeCandle(); lastCandleClose = now; currentCandle = { open: price, high: price, low: price, close: price }; }
         }
 
+        // Initialize chart with starting price data
         function seedHistory(startPrice) {
-            const data = []; let p = startPrice, eS = p, eL = p;
-            for (let i = 0; i < 30; i++) { p *= (1 + (Math.random() - 0.5) * 0.001); eS = calculateEMA(p, eS, settings.emaShort); eL = calculateEMA(p, eL, settings.emaLong); data.push({ close: p, emaShort: eS, emaLong: eL }); }
-            state.candles = data;
+            if (state.candles.length === 0) {
+                // Create initial candles with tiny variations for visual feedback
+                // Variations are very small (0.01%) so EMAs stay close to real price
+                let p = startPrice, eS = startPrice, eL = startPrice;
+                for (let i = 0; i < 10; i++) {
+                    // Small variation: +/- 0.01% to show EMA lines
+                    p = startPrice * (1 + (i % 3 - 1) * 0.0001);
+                    eS = calculateEMA(p, eS, settings.emaShort);
+                    eL = calculateEMA(p, eL, settings.emaLong);
+                    state.candles.push({ close: p, emaShort: eS, emaLong: eL });
+                }
+            }
         }
 
         function closeCandle() {
@@ -947,6 +990,7 @@
             const eL = calculateEMA(close, prev?.emaLong || close, settings.emaLong);
             const nc = { close, emaShort: eS, emaLong: eL };
             state.candles.push(nc); if (state.candles.length > 50) state.candles.shift();
+            saveCandlesToStorage(); // AUTO-SAVE on each candle
             runBot(nc, prev); drawChart();
         }
 
@@ -1091,16 +1135,49 @@
 
         // ========== CONTROLS ==========
         function toggleBot() { state.isRunning = !state.isRunning; document.getElementById('statusMessage').textContent = state.isRunning ? (settings.isRealMode ? '🔴' : '🟢') + ' Started' : 'Stopped'; updateUI(); }
-        function resetBot() { state = { ...state, isRunning: false, walletTHB: settings.simBalance, walletBTC: 0, entryPrice: null, costBasis: null, trades: [], totalFees: 0, candles: [] }; lastCandleClose = 0; document.getElementById('statusMessage').textContent = 'Reset'; updateTradeHistory(); updateUI(); }
+        function resetBot() {
+            state = { ...state, isRunning: false, walletTHB: settings.simBalance, walletBTC: 0, entryPrice: null, costBasis: null, trades: [], totalFees: 0, candles: [] };
+            lastCandleClose = 0;
+            // Clear saved data
+            localStorage.removeItem('cdcbot_candles');
+            localStorage.removeItem('cdcbot_trades');
+            document.getElementById('statusMessage').textContent = 'Reset';
+            updateTradeHistory();
+            updateUI();
+        }
         function openSettings() { document.getElementById('settingsModal').classList.add('active'); document.getElementById('timeframeSelect').value = settings.timeframe; document.getElementById('simBalanceInput').value = settings.simBalance; document.getElementById('apiKeyInput').value = settings.apiKey; document.getElementById('apiSecretInput').value = settings.apiSecret; document.getElementById('emaShortInput').value = settings.emaShort; document.getElementById('emaLongInput').value = settings.emaLong; updateModeUI(); }
         function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
         function toggleMode() { settings.isRealMode = !settings.isRealMode; updateModeUI(); }
         function updateModeUI() { const t = document.getElementById('modeToggle'), l = document.getElementById('modeLabel'); if (settings.isRealMode) { t.className = 'toggle-btn on'; l.textContent = '🔴 Real'; document.getElementById('simSettings').style.display = 'none'; document.getElementById('realSettings').style.display = 'block'; } else { t.className = 'toggle-btn off'; l.textContent = '🟢 Simulation'; document.getElementById('simSettings').style.display = 'block'; document.getElementById('realSettings').style.display = 'none'; } }
-        function saveSettings() { const eS = parseInt(document.getElementById('emaShortInput').value) || 12, eL = parseInt(document.getElementById('emaLongInput').value) || 26; if (eS >= eL) { alert('Fast EMA < Slow EMA'); return; } settings.timeframe = parseInt(document.getElementById('timeframeSelect').value); settings.simBalance = parseFloat(document.getElementById('simBalanceInput').value) || 100000; settings.apiKey = document.getElementById('apiKeyInput').value; settings.apiSecret = document.getElementById('apiSecretInput').value; settings.emaShort = eS; settings.emaLong = eL; saveSettingsToStorage(); state.walletTHB = settings.simBalance; state.walletBTC = 0; state.trades = []; state.totalFees = 0; state.candles = []; lastCandleClose = 0; closeSettings(); updateUI(); updateTradeHistory(); document.getElementById('statusMessage').textContent = 'Saved EMA' + eS + '/' + eL; }
+        function saveSettings() {
+            const eS = parseInt(document.getElementById('emaShortInput').value) || 12, eL = parseInt(document.getElementById('emaLongInput').value) || 26;
+            if (eS >= eL) { alert('Fast EMA < Slow EMA'); return; }
+            settings.timeframe = parseInt(document.getElementById('timeframeSelect').value);
+            settings.simBalance = parseFloat(document.getElementById('simBalanceInput').value) || 100000;
+            settings.apiKey = document.getElementById('apiKeyInput').value;
+            settings.apiSecret = document.getElementById('apiSecretInput').value;
+            settings.emaShort = eS;
+            settings.emaLong = eL;
+            saveSettingsToStorage();
+            // Clear old chart data when settings change
+            state.walletTHB = settings.simBalance;
+            state.walletBTC = 0;
+            state.trades = [];
+            state.totalFees = 0;
+            state.candles = [];
+            lastCandleClose = 0;
+            localStorage.removeItem('cdcbot_candles');
+            localStorage.removeItem('cdcbot_trades');
+            closeSettings();
+            updateUI();
+            updateTradeHistory();
+            document.getElementById('statusMessage').textContent = 'Saved EMA' + eS + '/' + eL;
+        }
 
         init();
     </script>
 </body>
 
 </html>
+
 
