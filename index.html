@@ -972,7 +972,7 @@
             document.getElementById('statusLabel').textContent = state.isRunning ? 'ON' : 'OFF';
             document.getElementById('toggleBtn').textContent = state.isRunning ? '⏸️ Stop' : '▶️ Start';
             document.getElementById('toggleBtn').className = 'btn ' + (state.isRunning ? 'btn-stop' : 'btn-start');
-            document.getElementById('priceValue').textContent = state.currentPrice > 0 ? formatK(state.currentPrice) : '...';
+            document.getElementById('priceValue').textContent = state.currentPrice > 0 ? formatTHB(state.currentPrice) : '...';
 
             const initBal = settings.simBalance || 100000;
             const portfolio = state.walletTHB + state.walletBTC * state.currentPrice;
