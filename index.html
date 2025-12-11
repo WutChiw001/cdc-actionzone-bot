@@ -279,6 +279,27 @@
             height: 200px;
         }
 
+        /* Bitkub Link */
+        .bitkub-link {
+            display: block;
+            background: linear-gradient(135deg, #1a5f4b, #0d7c66);
+            color: white;
+            text-align: center;
+            padding: 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 12px;
+            border: 1px solid #10b981;
+            transition: all 0.2s;
+        }
+
+        .bitkub-link:hover {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transform: scale(1.02);
+        }
+
         /* Trade History */
         .history-container {
             background: #1e293b;
@@ -725,6 +746,11 @@
                     <div class="empty-state">No trades yet</div>
                 </div>
             </div>
+
+            <!-- Bitkub Link -->
+            <a href="https://www.bitkub.com/market/BTC" target="_blank" class="bitkub-link" id="bitkubLink">
+                🔗 Open Bitkub to Trade BTC
+            </a>
         </div>
     </div>
 
@@ -929,8 +955,15 @@
             const cz = determineZone(candle.close, candle.emaShort, candle.emaLong);
             const pz = determineZone(prev.close, prev.emaShort, prev.emaLong);
             const pfx = settings.isRealMode ? '🔴' : '🟢';
-            const isBuy = cz === 'GREEN' && pz !== 'GREEN';
-            const isSell = cz === 'RED' && pz !== 'RED';
+
+            // TRUE EMA CROSSOVER DETECTION (not just zone change)
+            // BUY: Fast EMA crosses ABOVE slow EMA (was below, now above)
+            const emaCrossUp = prev.emaShort <= prev.emaLong && candle.emaShort > candle.emaLong;
+            // SELL: Fast EMA crosses BELOW slow EMA (was above, now below)
+            const emaCrossDown = prev.emaShort >= prev.emaLong && candle.emaShort < candle.emaLong;
+
+            const isBuy = emaCrossUp && cz === 'GREEN';
+            const isSell = emaCrossDown && cz === 'RED';
 
             if (isBuy && state.walletTHB > 100) {
                 const p = candle.close, amt = state.walletTHB, fee = amt * BITKUB_FEE, btc = (amt - fee) / p;
@@ -1070,3 +1103,4 @@
 </body>
 
 </html>
+
