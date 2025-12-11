@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CDC Bot">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="BTC/THB Trading Bot with CDC ActionZone V3 Strategy">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <title>CDC ActionZone Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100%;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px;
+            padding-top: max(12px, env(safe-area-inset-top));
+        }
+
+        /* Header - Mobile First */
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(to right, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 12px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .badge-green {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge-red {
+            background: rgba(244, 63, 94, 0.2);
+            color: #f43f5e;
+        }
+
+        .badge-yellow {
+            background: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1e293b;
+            padding: 6px 10px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-stop {
+            background: #f43f5e;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            flex: 0.5;
+        }
+
+        .btn-settings {
+            background: #334155;
+            color: #e2e8f0;
+            padding: 8px;
+            font-size: 16px;
+            flex: none;
+            width: 40px;
+        }
+
+        /* P/L Summary - Compact for Mobile */
+        .pl-summary {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .pl-item {
+            text-align: center;
+        }
+
+        .pl-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pl-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .pl-sub {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        /* Stats Grid */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .stat-title {
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .stat-sub {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .text-green {
+            color: #10b981;
+        }
+
+        .text-red {
+            color: #f43f5e;
+        }
+
+        .text-blue {
+            color: #3b82f6;
+        }
+
+        .text-yellow {
+            color: #eab308;
+        }
+
+        /* Chart */
+        .chart-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .chart-area {
+            height: 200px;
+        }
+
+        /* Trade History */
+        .history-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .history-header {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid #334155;
+            font-size: 12px;
+        }
+
+        .trade-type {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .trade-buy {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .trade-sell {
+            background: rgba(244, 63, 94, 0.2);
+            color: #f43f5e;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 24px;
+            font-size: 14px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: #475569;
+            border-radius: 2px;
+            margin: 0 auto 16px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .toggle-btn {
+            width: 50px;
+            height: 28px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .toggle-btn.off {
+            background: #475569;
+        }
+
+        .toggle-btn.on {
+            background: #f43f5e;
+        }
+
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            transition: left 0.2s;
+        }
+
+        .toggle-btn.off::after {
+            left: 2px;
+        }
+
+        .toggle-btn.on::after {
+            left: 24px;
+        }
+
+        .warning-box {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            color: #fca5a5;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            color: #93c5fd;
+            font-size: 12px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+            padding: 14px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin: 14px 0 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .header-top {
+                flex: 1;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .badge {
+                font-size: 12px;
+                padding: 2px 8px;
+            }
+
+            .pl-summary {
+                grid-template-columns: repeat(6, 1fr);
+                padding: 16px;
+            }
+
+            .pl-value {
+                font-size: 20px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .chart-area {
+                height: 300px;
+            }
+
+            .main-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 16px;
+            }
+
+            .history-list {
+                max-height: 340px;
+            }
+
+            .modal {
+                max-width: 480px;
+                border-radius: 20px;
+                margin: auto;
+            }
+
+            .btn {
+                flex: none;
+                padding: 12px 24px;
+            }
+
+            .btn-reset {
+                flex: none;
+            }
+
+            .btn-settings {
+                width: auto;
+                padding: 10px 16px;
+            }
+        }
+
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-top: 1px solid #334155;
+            padding: 16px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            display: none;
+            z-index: 50;
+        }
+
+        .install-prompt.show {
+            display: block;
+        }
+
+        .install-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .install-text {
+            font-size: 14px;
+        }
+
+        .install-text strong {
+            color: #10b981;
+        }
+
+        .btn-install {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-dismiss {
+            background: transparent;
+            color: #64748b;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <div class="title">⚡ CDC Bot</div>
+                    <div class="subtitle">
+                        BTC/THB • <span id="timeframeLabel">5s</span> • EMA<span id="emaShortLabel">12</span>/<span
+                            id="emaLongLabel">26</span>
+                        <span class="badge" id="connectionBadge">● --</span>
+                        <span class="badge" id="modeBadge">🟢 SIM</span>
+                    </div>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot" style="background: #f43f5e;"></span>
+                    <span id="statusLabel">Stopped</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-start" id="toggleBtn" onclick="toggleBot()">▶️ Start</button>
+            <button class="btn btn-reset" onclick="resetBot()">🔄</button>
+            <button class="btn btn-settings" onclick="openSettings()">⚙️</button>
+        </div>
+
+        <!-- P/L Summary -->
+        <div class="pl-summary">
+            <div class="pl-item">
+                <div class="pl-label">Portfolio</div>
+                <div class="pl-value" id="currentPortfolio">฿100K</div>
+            </div>
+            <div class="pl-item">
+                <div class="pl-label">P/L</div>
+                <div class="pl-value" id="totalPL">฿0</div>
+                <div class="pl-sub" id="totalPLPct">0%</div>
+            </div>
+            <div class="pl-item">
+                <div class="pl-label">Fees</div>
+                <div class="pl-value text-yellow" id="totalFees">฿0</div>
+            </div>
+            <div class="pl-item">
+                <div class="pl-label">Win Rate</div>
+                <div class="pl-value" id="winRate">0%</div>
+            </div>
+            <div class="pl-item">
+                <div class="pl-label">Trades</div>
+                <div class="pl-value" id="totalTrades">0</div>
+            </div>
+            <div class="pl-item">
+                <div class="pl-label">Zone</div>
+                <div class="pl-value" id="zoneValue">RED</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-title">BTC/THB</div>
+                <div class="stat-value" id="priceValue">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title" id="positionTitle">Position</div>
+                <div class="stat-value" id="positionValue">CASH</div>
+                <div class="stat-sub" id="positionSub">Waiting</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Unrealized</div>
+                <div class="stat-value" id="unrealizedPL">฿0</div>
+                <div class="stat-sub" id="unrealizedPLPct">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Status</div>
+                <div class="stat-value" style="font-size: 12px; word-break: break-all;" id="statusMessage">Ready</div>
+            </div>
+        </div>
+
+        <!-- Desktop: Grid Layout -->
+        <div class="main-grid">
+            <!-- Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div style="font-weight: 600;">Chart</div>
+                    <div class="chart-legend">
+                        <div class="legend-item"><span class="legend-dot" style="background: #10b981;"></span> EMA<span
+                                id="legendEmaShort">12</span></div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #f43f5e;"></span> EMA<span
+                                id="legendEmaLong">26</span></div>
+                    </div>
+                </div>
+                <div class="chart-area">
+                    <svg id="chartSvg" width="100%" height="100%" viewBox="0 0 600 200"
+                        preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="history-container">
+                <div class="history-header">Trades (0.25% fee)</div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">No trades yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-title">⚙️ Settings</div>
+
+            <div class="section-title">📊 EMA</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Fast</label>
+                    <input type="number" class="form-input" id="emaShortInput" value="12" min="2" max="50">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Slow</label>
+                    <input type="number" class="form-input" id="emaLongInput" value="26" min="5" max="200">
+                </div>
+            </div>
+
+            <div class="section-title">⏱️ Timeframe</div>
+            <div class="form-group">
+                <select class="form-select" id="timeframeSelect">
+                    <option value="5000">5s (Demo)</option>
+                    <option value="60000">1 Minute</option>
+                    <option value="300000">5 Minutes</option>
+                    <option value="900000">15 Minutes</option>
+                    <option value="3600000">1 Hour</option>
+                    <option value="14400000">4 Hours</option>
+                </select>
+            </div>
+
+            <div class="section-title">💹 Mode</div>
+            <div class="toggle-container">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">Trading Mode</div>
+                    <div style="font-size: 12px; color: #94a3b8;" id="modeLabel">🟢 Simulation</div>
+                </div>
+                <button class="toggle-btn off" id="modeToggle" onclick="toggleMode()"></button>
+            </div>
+
+            <div id="simSettings" style="margin-top: 12px;">
+                <div class="form-group">
+                    <label class="form-label">💰 Balance (THB)</label>
+                    <input type="number" class="form-input" id="simBalanceInput" value="100000">
+                </div>
+            </div>
+
+            <div id="realSettings" style="display: none; margin-top: 12px;">
+                <div class="warning-box">⚠️ Real trades! 0.25% fee per trade</div>
+                <div class="form-group">
+                    <label class="form-label">🔑 API Key</label>
+                    <input type="text" class="form-input" id="apiKeyInput" placeholder="Bitkub API Key">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔐 API Secret</label>
+                    <input type="password" class="form-input" id="apiSecretInput" placeholder="Bitkub API Secret">
+                </div>
+                <div class="info-box">ℹ️ Stored locally only</div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-reset" onclick="closeSettings()">Cancel</button>
+                <button class="btn btn-start" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-content">
+            <div class="install-text">📱 <strong>Install App</strong> for better experience</div>
+            <button class="btn-install" onclick="installApp()">Install</button>
+            <button class="btn-dismiss" onclick="dismissInstall()">×</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== PWA ==========
+        let deferredPrompt;
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered')).catch(err => console.log('SW error:', err));
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.add('show');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choice => {
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').classList.remove('show');
+                });
+            }
+        }
+
+        function dismissInstall() {
+            document.getElementById('installPrompt').classList.remove('show');
+        }
+
+        // ========== STATE ==========
+        let state = {
+            isRunning: false,
+            currentZone: 'RED',
+            walletTHB: 100000,
+            walletBTC: 0,
+            entryPrice: null,
+            costBasis: null,
+            trades: [],
+            candles: [],
+            currentPrice: 0,
+            connectionStatus: 'DISCONNECTED',
+            totalFees: 0
+        };
+
+        let settings = {
+            timeframe: 5000,
+            simBalance: 100000,
+            apiKey: '',
+            apiSecret: '',
+            isRealMode: false,
+            emaShort: 12,
+            emaLong: 26
+        };
+
+        let ws = null, currentCandle = {}, lastCandleClose = 0;
+        const BITKUB_FEE = 0.0025;
+        const TF_LABELS = { 5000: '5s', 60000: '1m', 300000: '5m', 900000: '15m', 3600000: '1h', 14400000: '4h' };
+
+        // ========== INIT ==========
+        function init() {
+            loadSettings();
+            connectWS();
+            updateUI();
+        }
+
+        function loadSettings() {
+            try {
+                const s = localStorage.getItem('cdcbot_settings');
+                if (s) { settings = { ...settings, ...JSON.parse(s) }; state.walletTHB = settings.simBalance; }
+            } catch (e) { }
+        }
+
+        function saveSettingsToStorage() { localStorage.setItem('cdcbot_settings', JSON.stringify(settings)); }
+
+        // ========== WEBSOCKET ==========
+        function connectWS() {
+            state.connectionStatus = 'CONNECTING';
+            updateUI();
+            try {
+                ws = new WebSocket('wss://api.bitkub.com/websocket-api/market.ticker.thb_btc');
+                ws.onopen = () => { state.connectionStatus = 'CONNECTED'; updateUI(); };
+                ws.onmessage = (e) => {
+                    try {
+                        const m = JSON.parse(e.data);
+                        const p = m.last ? parseFloat(m.last) : (m.data?.last ? parseFloat(m.data.last) : 0);
+                        if (p > 0) { state.currentPrice = p; handleTick(p); updateUI(); }
+                    } catch (err) { }
+                };
+                ws.onerror = () => { state.connectionStatus = 'ERROR'; updateUI(); };
+                ws.onclose = () => { state.connectionStatus = 'DISCONNECTED'; updateUI(); setTimeout(connectWS, 5000); };
+            } catch (e) { state.connectionStatus = 'ERROR'; setTimeout(connectWS, 5000); }
+        }
+
+        // ========== TRADING ==========
+        function calculateEMA(price, prev, period) { return prev === null ? price : (price * (2 / (period + 1))) + (prev * (1 - 2 / (period + 1))); }
+        function determineZone(close, eS, eL) { return eS > eL ? (close > eS ? 'GREEN' : 'YELLOW') : (close > eS ? 'BLUE' : 'RED'); }
+
+        function handleTick(price) {
+            const now = Date.now();
+            if (!lastCandleClose) { lastCandleClose = now; currentCandle = { open: price, high: price, low: price, close: price }; if (state.candles.length === 0) seedHistory(price); return; }
+            if (currentCandle.high && price > currentCandle.high) currentCandle.high = price;
+            if (currentCandle.low && price < currentCandle.low) currentCandle.low = price;
+            currentCandle.close = price;
+            if (now - lastCandleClose >= settings.timeframe) { closeCandle(); lastCandleClose = now; currentCandle = { open: price, high: price, low: price, close: price }; }
+        }
+
+        function seedHistory(startPrice) {
+            const data = []; let p = startPrice, eS = p, eL = p;
+            for (let i = 0; i < 30; i++) { p *= (1 + (Math.random() - 0.5) * 0.001); eS = calculateEMA(p, eS, settings.emaShort); eL = calculateEMA(p, eL, settings.emaLong); data.push({ close: p, emaShort: eS, emaLong: eL }); }
+            state.candles = data;
+        }
+
+        function closeCandle() {
+            const prev = state.candles[state.candles.length - 1];
+            const close = currentCandle.close || 0;
+            const eS = calculateEMA(close, prev?.emaShort || close, settings.emaShort);
+            const eL = calculateEMA(close, prev?.emaLong || close, settings.emaLong);
+            const nc = { close, emaShort: eS, emaLong: eL };
+            state.candles.push(nc); if (state.candles.length > 50) state.candles.shift();
+            runBot(nc, prev); drawChart();
+        }
+
+        function runBot(candle, prev) {
+            if (!state.isRunning || !prev?.emaShort || !prev?.emaLong) { state.currentZone = determineZone(candle.close, candle.emaShort, candle.emaLong); return; }
+            const cz = determineZone(candle.close, candle.emaShort, candle.emaLong);
+            const pz = determineZone(prev.close, prev.emaShort, prev.emaLong);
+            const pfx = settings.isRealMode ? '🔴' : '🟢';
+            const isBuy = cz === 'GREEN' && pz !== 'GREEN';
+            const isSell = cz === 'RED' && pz !== 'RED';
+
+            if (isBuy && state.walletTHB > 100) {
+                const p = candle.close, amt = state.walletTHB, fee = amt * BITKUB_FEE, btc = (amt - fee) / p;
+                state.walletTHB = 0; state.walletBTC = btc; state.entryPrice = p; state.costBasis = amt; state.totalFees += fee;
+                state.trades.push({ id: Date.now(), type: 'BUY', price: p, amount: amt, fee, timestamp: new Date().toISOString(), isReal: settings.isRealMode });
+                document.getElementById('statusMessage').textContent = pfx + ' BUY ' + formatK(p);
+            } else if (isSell && state.walletBTC > 0.000001) {
+                const p = candle.close, gross = state.walletBTC * p, fee = gross * BITKUB_FEE, net = gross - fee, cost = state.costBasis || 0, profit = net - cost;
+                if (net > cost) {
+                    state.walletTHB = net; state.walletBTC = 0; state.entryPrice = null; state.costBasis = null; state.totalFees += fee;
+                    state.trades.push({ id: Date.now(), type: 'SELL', price: p, amount: net, fee, profitLoss: profit, timestamp: new Date().toISOString(), isReal: settings.isRealMode });
+                    document.getElementById('statusMessage').textContent = pfx + ' SELL +' + formatK(profit);
+                } else { document.getElementById('statusMessage').textContent = pfx + ' HOLD (loss)'; }
+            } else if (state.walletBTC > 0) {
+                const val = state.walletBTC * candle.close * (1 - BITKUB_FEE), diff = val - (state.costBasis || 0);
+                document.getElementById('statusMessage').textContent = pfx + ' Hold ' + (diff >= 0 ? '+' : '') + formatK(diff);
+            } else { document.getElementById('statusMessage').textContent = pfx + ' Wait (' + cz + ')'; }
+            state.currentZone = cz; updateTradeHistory();
+        }
+
+        // ========== UI ==========
+        function formatTHB(n) { return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
+        function formatK(n) { return Math.abs(n) >= 1000 ? (n / 1000).toFixed(1) + 'K' : n.toFixed(0); }
+
+        function updateUI() {
+            document.getElementById('emaShortLabel').textContent = settings.emaShort;
+            document.getElementById('emaLongLabel').textContent = settings.emaLong;
+            document.getElementById('legendEmaShort').textContent = settings.emaShort;
+            document.getElementById('legendEmaLong').textContent = settings.emaLong;
+
+            const cb = document.getElementById('connectionBadge');
+            cb.className = 'badge badge-' + (state.connectionStatus === 'CONNECTED' ? 'green' : state.connectionStatus === 'CONNECTING' ? 'yellow' : 'red');
+            cb.textContent = '● ' + (state.connectionStatus === 'CONNECTED' ? 'LIVE' : state.connectionStatus === 'CONNECTING' ? '...' : 'OFF');
+
+            document.getElementById('modeBadge').className = 'badge badge-' + (settings.isRealMode ? 'red' : 'green');
+            document.getElementById('modeBadge').textContent = settings.isRealMode ? '🔴 REAL' : '🟢 SIM';
+            document.getElementById('timeframeLabel').textContent = TF_LABELS[settings.timeframe] || '5s';
+            document.getElementById('statusDot').style.background = state.isRunning ? '#10b981' : '#f43f5e';
+            document.getElementById('statusLabel').textContent = state.isRunning ? 'ON' : 'OFF';
+            document.getElementById('toggleBtn').textContent = state.isRunning ? '⏸️ Stop' : '▶️ Start';
+            document.getElementById('toggleBtn').className = 'btn ' + (state.isRunning ? 'btn-stop' : 'btn-start');
+            document.getElementById('priceValue').textContent = state.currentPrice > 0 ? formatK(state.currentPrice) : '...';
+
+            const initBal = settings.simBalance || 100000;
+            const portfolio = state.walletTHB + state.walletBTC * state.currentPrice;
+            const pl = portfolio - initBal, plPct = ((pl / initBal) * 100).toFixed(1);
+
+            document.getElementById('currentPortfolio').textContent = formatK(portfolio);
+            document.getElementById('currentPortfolio').className = 'pl-value ' + (pl >= 0 ? 'text-green' : 'text-red');
+            document.getElementById('totalPL').textContent = (pl >= 0 ? '+' : '') + formatK(pl);
+            document.getElementById('totalPL').className = 'pl-value ' + (pl >= 0 ? 'text-green' : 'text-red');
+            document.getElementById('totalPLPct').textContent = (pl >= 0 ? '+' : '') + plPct + '%';
+            document.getElementById('totalFees').textContent = formatK(state.totalFees);
+
+            const sells = state.trades.filter(t => t.type === 'SELL');
+            const wins = sells.filter(t => t.profitLoss > 0).length;
+            document.getElementById('winRate').textContent = sells.length > 0 ? Math.round((wins / sells.length) * 100) + '%' : '0%';
+            document.getElementById('winRate').className = 'pl-value ' + (wins >= sells.length - wins ? 'text-green' : 'text-red');
+            document.getElementById('totalTrades').textContent = state.trades.length;
+
+            const zoneEl = document.getElementById('zoneValue');
+            zoneEl.textContent = state.currentZone;
+            zoneEl.className = 'pl-value text-' + state.currentZone.toLowerCase();
+
+            if (state.walletBTC > 0 && state.costBasis) {
+                const be = state.costBasis / (state.walletBTC * (1 - BITKUB_FEE));
+                document.getElementById('positionTitle').textContent = 'Break-Even';
+                document.getElementById('positionValue').textContent = formatK(be);
+                document.getElementById('positionValue').className = 'stat-value text-blue';
+                document.getElementById('positionSub').textContent = (state.walletBTC * 1e8).toFixed(0) + ' sats';
+                const cv = state.walletBTC * state.currentPrice * (1 - BITKUB_FEE), unr = cv - state.costBasis, unrPct = ((unr / state.costBasis) * 100).toFixed(1);
+                document.getElementById('unrealizedPL').textContent = (unr >= 0 ? '+' : '') + formatK(unr);
+                document.getElementById('unrealizedPL').className = 'stat-value ' + (unr >= 0 ? 'text-green' : 'text-red');
+                document.getElementById('unrealizedPLPct').textContent = (unr >= 0 ? '+' : '') + unrPct + '%';
+            } else {
+                document.getElementById('positionTitle').textContent = 'Position';
+                document.getElementById('positionValue').textContent = 'CASH';
+                document.getElementById('positionValue').className = 'stat-value';
+                document.getElementById('positionSub').textContent = 'Waiting';
+                document.getElementById('unrealizedPL').textContent = '฿0';
+                document.getElementById('unrealizedPL').className = 'stat-value';
+                document.getElementById('unrealizedPLPct').textContent = '--';
+            }
+            drawChart();
+        }
+
+        function updateTradeHistory() {
+            const list = document.getElementById('historyList');
+            if (state.trades.length === 0) { list.innerHTML = '<div class="empty-state">No trades yet</div>'; return; }
+            list.innerHTML = [...state.trades].reverse().slice(0, 20).map(t => `
+        <div class="trade-item">
+          <div>
+            <span class="trade-type ${t.type === 'BUY' ? 'trade-buy' : 'trade-sell'}">${t.type}</span>
+            <span style="color:#64748b;margin-left:6px;font-size:10px;">${new Date(t.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:monospace;font-size:11px;">${formatK(t.price)}</div>
+            ${t.profitLoss !== undefined ? `<div class="${t.profitLoss > 0 ? 'text-green' : 'text-red'}" style="font-size:10px;font-weight:bold;">${t.profitLoss > 0 ? '+' : ''}${formatK(t.profitLoss)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+        }
+
+        function drawChart() {
+            const svg = document.getElementById('chartSvg');
+            if (state.candles.length < 2) { svg.innerHTML = '<text x="300" y="100" text-anchor="middle" fill="#64748b" font-size="14">Waiting...</text>'; return; }
+            const W = 600, H = 200, P = 35;
+            const prices = state.candles.map(c => c.close);
+            const eS = state.candles.map(c => c.emaShort).filter(Boolean);
+            const eL = state.candles.map(c => c.emaLong).filter(Boolean);
+            const all = [...prices, ...eS, ...eL];
+            const min = Math.min(...all) * 0.9999, max = Math.max(...all) * 1.0001;
+            const xSc = i => P + (i / (state.candles.length - 1)) * (W - 2 * P);
+            const ySc = v => H - P - ((v - min) / (max - min)) * (H - 2 * P);
+            const pPath = state.candles.map((c, i) => `${i === 0 ? 'M' : 'L'} ${xSc(i)} ${ySc(c.close)}`).join(' ');
+            const eSP = state.candles.filter(c => c.emaShort).map((c, i) => `${i === 0 ? 'M' : 'L'} ${xSc(i)} ${ySc(c.emaShort)}`).join(' ');
+            const eLP = state.candles.filter(c => c.emaLong).map((c, i) => `${i === 0 ? 'M' : 'L'} ${xSc(i)} ${ySc(c.emaLong)}`).join(' ');
+            const zC = { GREEN: '#10b981', RED: '#f43f5e', BLUE: '#3b82f6', YELLOW: '#eab308' };
+            const dots = state.candles.map((c, i) => { if (!c.emaShort || !c.emaLong) return ''; const z = determineZone(c.close, c.emaShort, c.emaLong); return `<circle cx="${xSc(i)}" cy="${ySc(c.close)}" r="3" fill="${zC[z]}"/>`; }).join('');
+            const grid = [0, .5, 1].map(r => `<line x1="${P}" y1="${P + r * (H - 2 * P)}" x2="${W - P}" y2="${P + r * (H - 2 * P)}" stroke="#334155"/>`).join('');
+            let be = '';
+            if (state.walletBTC > 0 && state.costBasis) { const beP = state.costBasis / (state.walletBTC * (1 - BITKUB_FEE)); if (beP >= min && beP <= max) be = `<line x1="${P}" y1="${ySc(beP)}" x2="${W - P}" y2="${ySc(beP)}" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4,4"/>`; }
+            svg.innerHTML = `${grid}<path d="${eLP}" fill="none" stroke="#f43f5e" stroke-width="2" opacity="0.7"/><path d="${eSP}" fill="none" stroke="#10b981" stroke-width="2" opacity="0.7"/><path d="${pPath}" fill="none" stroke="#64748b" stroke-width="1.5"/>${dots}${be}<text x="${P - 3}" y="${P + 4}" fill="#64748b" font-size="9" text-anchor="end">${(max / 1000).toFixed(0)}K</text><text x="${P - 3}" y="${H - P + 4}" fill="#64748b" font-size="9" text-anchor="end">${(min / 1000).toFixed(0)}K</text>`;
+        }
+
+        // ========== CONTROLS ==========
+        function toggleBot() { state.isRunning = !state.isRunning; document.getElementById('statusMessage').textContent = state.isRunning ? (settings.isRealMode ? '🔴' : '🟢') + ' Started' : 'Stopped'; updateUI(); }
+        function resetBot() { state = { ...state, isRunning: false, walletTHB: settings.simBalance, walletBTC: 0, entryPrice: null, costBasis: null, trades: [], totalFees: 0, candles: [] }; lastCandleClose = 0; document.getElementById('statusMessage').textContent = 'Reset'; updateTradeHistory(); updateUI(); }
+        function openSettings() { document.getElementById('settingsModal').classList.add('active'); document.getElementById('timeframeSelect').value = settings.timeframe; document.getElementById('simBalanceInput').value = settings.simBalance; document.getElementById('apiKeyInput').value = settings.apiKey; document.getElementById('apiSecretInput').value = settings.apiSecret; document.getElementById('emaShortInput').value = settings.emaShort; document.getElementById('emaLongInput').value = settings.emaLong; updateModeUI(); }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+        function toggleMode() { settings.isRealMode = !settings.isRealMode; updateModeUI(); }
+        function updateModeUI() { const t = document.getElementById('modeToggle'), l = document.getElementById('modeLabel'); if (settings.isRealMode) { t.className = 'toggle-btn on'; l.textContent = '🔴 Real'; document.getElementById('simSettings').style.display = 'none'; document.getElementById('realSettings').style.display = 'block'; } else { t.className = 'toggle-btn off'; l.textContent = '🟢 Simulation'; document.getElementById('simSettings').style.display = 'block'; document.getElementById('realSettings').style.display = 'none'; } }
+        function saveSettings() { const eS = parseInt(document.getElementById('emaShortInput').value) || 12, eL = parseInt(document.getElementById('emaLongInput').value) || 26; if (eS >= eL) { alert('Fast EMA < Slow EMA'); return; } settings.timeframe = parseInt(document.getElementById('timeframeSelect').value); settings.simBalance = parseFloat(document.getElementById('simBalanceInput').value) || 100000; settings.apiKey = document.getElementById('apiKeyInput').value; settings.apiSecret = document.getElementById('apiSecretInput').value; settings.emaShort = eS; settings.emaLong = eL; saveSettingsToStorage(); state.walletTHB = settings.simBalance; state.walletBTC = 0; state.trades = []; state.totalFees = 0; state.candles = []; lastCandleClose = 0; closeSettings(); updateUI(); updateTradeHistory(); document.getElementById('statusMessage').textContent = 'Saved EMA' + eS + '/' + eL; }
+
+        init();
+    </script>
+</body>
+
+</html>
